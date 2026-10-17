@@ -62,7 +62,21 @@ button, input[type=submit], input[type=button], input[type=reset] { border: 1px 
 nobr { white-space: nowrap; }
 `
 
+// quirksCSS is applied in addition to uaCSS for documents in quirks mode
+// (no doctype), following Chromium's quirks.css.
+const quirksCSS = `
+table {
+  white-space: normal; line-height: normal; font-weight: normal; font-size: medium;
+  font-style: normal; text-align: start;
+}
+img[align=left] { margin-right: 3px; }
+img[align=right] { margin-left: 3px; }
+input, textarea { box-sizing: border-box; }
+form { margin-bottom: 1em; }
+`
+
 var uaSheet = css.Parse(uaCSS)
+var quirksSheet = css.Parse(quirksCSS)
 
 // presentationalHints maps legacy HTML attributes to CSS declarations, per
 // the HTML spec's rendering section.

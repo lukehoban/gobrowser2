@@ -29,6 +29,9 @@ type Node struct {
 	Text     string // text for text and comment nodes
 	Parent   *Node
 	Children []*Node
+
+	// Quirks is set on document nodes parsed without an HTML doctype.
+	Quirks bool
 }
 
 // NewElement creates an element node.

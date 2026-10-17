@@ -48,7 +48,7 @@ var tableChildren = map[string]bool{
 // Parse parses an HTML document into a DOM tree. The result always contains
 // html, head and body elements.
 func Parse(src string) *dom.Node {
-	b := &builder{doc: &dom.Node{Type: dom.DocumentNode}}
+	b := &builder{doc: &dom.Node{Type: dom.DocumentNode, Quirks: true}}
 	for _, tok := range Tokenize(src) {
 		b.token(tok)
 	}
@@ -103,6 +103,9 @@ func mergeAttrs(n *dom.Node, attrs []dom.Attr) {
 func (b *builder) token(tok Token) {
 	switch tok.Type {
 	case DoctypeToken:
+		if b.htmlEl == nil {
+			b.doc.Quirks = !isStandardsDoctype(tok.Data)
+		}
 		return
 	case CommentToken:
 		c := &dom.Node{Type: dom.CommentNode, Text: tok.Data}
@@ -133,6 +136,30 @@ func (b *builder) token(tok Token) {
 
 // beforeBody handles tokens before <body> has been created. It returns true
 // if the token was fully handled.
+// isStandardsDoctype reports whether a doctype (the text after
+// "<!DOCTYPE") selects standards mode. This is a simplification of the
+// HTML spec's quirks-mode detection.
+func isStandardsDoctype(d string) bool {
+	fields := strings.Fields(strings.ToLower(d))
+	if len(fields) == 0 || fields[0] != "html" {
+		return false
+	}
+	if len(fields) == 1 {
+		return true
+	}
+	rest := strings.Join(fields[1:], " ")
+	switch {
+	case strings.Contains(rest, "xhtml 1.0 strict"), strings.Contains(rest, "xhtml 1.1"),
+		strings.Contains(rest, "html 4.01//en\""), strings.Contains(rest, "html 4.0//en\""),
+		strings.Contains(rest, "dtd/strict.dtd"), strings.Contains(rest, "about:legacy-compat"):
+		return true
+	case strings.Contains(rest, "transitional") || strings.Contains(rest, "frameset"):
+		// Transitional doctypes with a system identifier are almost standards.
+		return strings.Contains(rest, "http://www.w3.org/tr/")
+	}
+	return false
+}
+
 func (b *builder) beforeBody(tok Token) bool {
 	switch tok.Type {
 	case TextToken:

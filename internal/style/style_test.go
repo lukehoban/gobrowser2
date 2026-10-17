@@ -115,3 +115,23 @@ func TestLegacyAttributes(t *testing.T) {
 		t.Errorf("legacyFontSize(+1) = %q", v)
 	}
 }
+
+func TestQuirksTableReset(t *testing.T) {
+	src := `<center style="font-size: 20px"><table><tr><td>x</td></tr></table></center>`
+	for _, c := range []struct {
+		doctype string
+		align   string
+		size    float64
+	}{
+		{"", "left", 16},
+		{"<!DOCTYPE html>", "-webkit-center", 20},
+	} {
+		doc := html.Parse(c.doctype + src)
+		st := Compute(doc, nil, 1024)
+		td := st[doc.Find("td")]
+		if td.TextAlign != c.align || !near(td.FontSize, c.size) {
+			t.Errorf("doctype %q: td text-align %q font-size %v, want %q %v",
+				c.doctype, td.TextAlign, td.FontSize, c.align, c.size)
+		}
+	}
+}

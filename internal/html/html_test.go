@@ -148,3 +148,23 @@ func TestParseAttributes(t *testing.T) {
 		t.Errorf("table width = %q", v)
 	}
 }
+
+func TestQuirksMode(t *testing.T) {
+	cases := []struct {
+		in     string
+		quirks bool
+	}{
+		{`<html><body>x`, true},
+		{`<!DOCTYPE html><html><body>x`, false},
+		{`<!doctype HTML>x`, false},
+		{`<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">x`, true},
+		{`<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">x`, false},
+		{`<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">x`, false},
+		{`<!DOCTYPE foo>x`, true},
+	}
+	for _, c := range cases {
+		if got := Parse(c.in).Quirks; got != c.quirks {
+			t.Errorf("Parse(%q).Quirks = %v, want %v", c.in, got, c.quirks)
+		}
+	}
+}

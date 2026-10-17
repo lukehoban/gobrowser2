@@ -135,9 +135,15 @@ func Compute(doc *dom.Node, author []*css.Stylesheet, viewportWidth float64) Sty
 	}
 	var rules []indexedRule
 	order := 0
-	for _, r := range uaSheet.Rules {
-		rules = append(rules, indexedRule{r, true, order})
-		order++
+	ua := []*css.Stylesheet{uaSheet}
+	if doc.Quirks {
+		ua = append(ua, quirksSheet)
+	}
+	for _, ss := range ua {
+		for _, r := range ss.Rules {
+			rules = append(rules, indexedRule{r, true, order})
+			order++
+		}
 	}
 	for _, ss := range author {
 		for _, r := range ss.Rules {

@@ -1,0 +1,17 @@
+body  { font-family:Verdana, Geneva, sans-serif; font-size:10pt; color:#828282; }
+td    { font-family:Verdana, Geneva, sans-serif; font-size:10pt; color:#828282; }
+.title { font-family:Verdana, Geneva, sans-serif; font-size: 10pt; color:#828282; overflow:hidden; }
+.subtext { font-family:Verdana, Geneva, sans-serif; font-size: 7pt; color:#828282; }
+.yclinks { font-family:Verdana, Geneva, sans-serif; font-size: 8pt; color:#828282; }
+.pagetop { font-family:Verdana, Geneva, sans-serif; font-size: 10pt; color:#222222; line-height:12px; }
+.comhead { font-family:Verdana, Geneva, sans-serif; font-size: 8pt; color:#828282; }
+a:link    { color:#000000; text-decoration:none; }
+a:visited { color:#828282; text-decoration:none; }
+.pagetop a:visited { color:#000000; }
+.subtext a:link, .subtext a:visited { color:#828282; }
+.subtext a:hover { text-decoration:underline; }
+.comhead a:link, .subtext a:visited { color:#828282; }
+.yclinks a:link, .yclinks a:visited { color:#000000; }
+.hnname { margin-right: 5px; }
+.votearrow { width: 10px; height: 10px; border: 0px; margin: 3px 2px 6px; background: #9a9a9a; }
+.votelinks { vertical-align: top; }
