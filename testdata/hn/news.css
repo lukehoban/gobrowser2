@@ -1,0 +1,33 @@
+/* A small stylesheet with the same shape as the one Hacker News uses. */
+body  { font-family: Verdana, Geneva, sans-serif; font-size: 10pt; color: #828282; }
+td    { font-family: Verdana, Geneva, sans-serif; font-size: 10pt; color: #828282; }
+
+a:link    { color: #000000; text-decoration: none; }
+a:visited { color: #828282; text-decoration: none; }
+
+.title   { font-size: 10pt; color: #828282; overflow: hidden; }
+.subtext { font-size: 7pt; color: #828282; }
+.yclinks { font-size: 8pt; color: #828282; }
+.pagetop { font-size: 10pt; color: #222222; line-height: 12px; }
+.comhead { font-size: 8pt; color: #828282; }
+.hnname  { margin-left: 1px; margin-right: 5px; }
+
+#hnmain { min-width: 796px; }
+
+.subtext a:link, .subtext a:visited { color: #828282; }
+.comhead a:link { color: #828282; }
+
+.votearrow {
+  width: 10px;
+  height: 10px;
+  border: 0px;
+  margin: 3px 2px 6px;
+  background: url("arrow.svg"), linear-gradient(transparent, transparent) no-repeat;
+  background-size: 10px;
+}
+
+/* Mobile rules: skipped, since only the desktop layout is rendered. */
+@media only screen and (min-width: 300px) and (max-width: 750px) {
+  #hnmain { width: 100%; min-width: 0; }
+  .title { font-size: 11pt; }
+}

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then echo "Files need gofmt:"; echo "$out"; exit 1; fi
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test -race ./...
+      - name: build
+        run: go build -o gobrowser ./cmd/gobrowser
+      - name: render fixture
+        run: ./gobrowser -o fixture.png testdata/hn/index.html
+      - name: render news.ycombinator.com
+        continue-on-error: true
+        run: ./gobrowser -o hn.png https://news.ycombinator.com/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renders
+          path: "*.png"
+          if-no-files-found: warn
