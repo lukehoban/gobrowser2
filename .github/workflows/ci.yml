@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then echo "Needs gofmt:"; echo "$unformatted"; exit 1; fi
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test ./...
+      - name: build
+        run: go build -o gobrowser ./cmd/gobrowser
+      - name: render fixture
+        run: ./gobrowser -v -o fixture.png testdata/hn-like.html
+      - name: render news.ycombinator.com
+        continue-on-error: true
+        run: ./gobrowser -v -o hn.png https://news.ycombinator.com/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renders
+          path: |
+            fixture.png
+            hn.png
+          if-no-files-found: warn
