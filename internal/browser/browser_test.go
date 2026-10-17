@@ -51,7 +51,7 @@ func TestLoadFixture(t *testing.T) {
 
 func TestLoadResolvesSubresources(t *testing.T) {
 	files := map[string]string{
-		"http://example.test/dir/page.html": `<!DOCTYPE html><link rel="stylesheet" href="../s.css"><link rel="stylesheet" href="print.css" media="print"><body><p>hi</p><img src="missing.png">`,
+		"http://example.test/dir/page.html": `<!DOCTYPE html><link rel="stylesheet" href="../s.css"><link rel="stylesheet" href="print.css" media="print"><body><p>hi</p><img src="missing.png"><img src="file:///etc/hostname">`,
 		"http://example.test/s.css":         `body { background: #123456 }`,
 	}
 	var fetched []string
@@ -68,8 +68,8 @@ func TestLoadResolvesSubresources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(strings.Join(fetched, " "), "print.css") {
-		t.Errorf("print stylesheet should not be fetched: %v", fetched)
+	if all := strings.Join(fetched, " "); strings.Contains(all, "print.css") || strings.Contains(all, "file:") {
+		t.Errorf("print stylesheet and local files should not be fetched: %v", fetched)
 	}
 	if len(p.Warnings) != 1 || !strings.Contains(p.Warnings[0], "missing.png") {
 		t.Errorf("warnings = %v, want one for missing.png", p.Warnings)

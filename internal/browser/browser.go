@@ -23,6 +23,12 @@ import (
 	"github.com/lukehoban/gobrowser2/internal/style"
 )
 
+// MaxHeight bounds the height of rendered images, in px.
+const MaxHeight = 32768
+
+// maxImagePixels bounds the decoded size of an image.
+const maxImagePixels = 50_000_000
+
 // Options configures page loading and rendering.
 type Options struct {
 	Width  int // viewport width in px
@@ -81,9 +87,7 @@ func (p *Page) Render() *image.RGBA {
 	if h <= 0 {
 		h = int(math.Ceil(p.Height))
 	}
-	if h <= 0 {
-		h = 1
-	}
+	h = min(max(h, 1), MaxHeight)
 	return render.Paint(p.Root, p.opts.Width, h)
 }
 
@@ -115,8 +119,11 @@ func (p *Page) resolve(ref string) (string, bool) {
 		return "", false
 	}
 	switch u.Scheme {
-	case "http", "https", "file":
+	case "http", "https":
 		return u.String(), true
+	case "file":
+		// Like browsers, only local pages may load local files.
+		return u.String(), p.URL.Scheme == "file"
 	}
 	return "", false
 }
@@ -207,6 +214,12 @@ func (p *Page) loadImages() map[*dom.Node]image.Image {
 		resp, err := p.opts.Fetch(u)
 		if err != nil || resp.Status >= 400 {
 			p.warn("image %s: fetch failed", u)
+			failed[u] = true
+			continue
+		}
+		if cfg, _, err := image.DecodeConfig(bytes.NewReader(resp.Body)); err == nil &&
+			cfg.Width*cfg.Height > maxImagePixels {
+			p.warn("image %s: too large (%dx%d)", u, cfg.Width, cfg.Height)
 			failed[u] = true
 			continue
 		}
