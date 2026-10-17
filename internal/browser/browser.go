@@ -39,6 +39,9 @@ type Page struct {
 
 	fetcher *fetch.Fetcher
 	logf    func(format string, args ...any)
+	// local reports whether the document itself was loaded from a file.
+	// It is fixed at load time so that <base> cannot change it.
+	local bool
 }
 
 // Load fetches and parses the document at u along with its stylesheets and
@@ -65,10 +68,10 @@ func LoadBytes(ctx context.Context, f *fetch.Fetcher, u *url.URL, body []byte, c
 	if err != nil {
 		return nil, err
 	}
-	p := &Page{URL: u, Doc: doc, Images: map[string]layout.Image{}, fetcher: f, logf: log.Printf}
+	p := &Page{URL: u, Doc: doc, Images: map[string]layout.Image{}, fetcher: f, logf: log.Printf, local: u.Scheme == "file"}
 	if b := doc.Find("base"); b != nil {
 		if h, ok := b.Attr("href"); ok {
-			if bu := fetch.Resolve(u, h); bu != nil {
+			if bu := fetch.Resolve(u, h); bu != nil && p.allowed(bu) {
 				p.URL = bu
 			}
 		}
@@ -86,7 +89,7 @@ func (p *Page) allowed(u *url.URL) bool {
 	case "http", "https", "data":
 		return true
 	case "file":
-		return p.URL.Scheme == "file"
+		return p.local
 	}
 	return false
 }
