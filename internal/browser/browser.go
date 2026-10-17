@@ -5,6 +5,7 @@ package browser
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"image"
 	"image/color"
 	_ "image/gif"  // register decoder
@@ -222,11 +223,22 @@ func (p *Page) loadImages(ctx context.Context) {
 	wg.Wait()
 }
 
+// maxImagePixels bounds decoded raster images so that a small, highly
+// compressed file can't exhaust memory.
+const maxImagePixels = 50_000_000
+
 // DecodeImage decodes a raster (PNG, GIF, JPEG) or SVG image.
 func DecodeImage(data []byte, contentType string) (layout.Image, error) {
 	head := strings.TrimSpace(string(data[:min(len(data), 256)]))
 	if strings.Contains(contentType, "svg") || strings.HasPrefix(head, "<svg") || strings.HasPrefix(head, "<?xml") {
 		return svg.Parse(data)
+	}
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	if cfg.Width <= 0 || cfg.Height <= 0 || cfg.Width*cfg.Height > maxImagePixels {
+		return nil, fmt.Errorf("image dimensions %dx%d not supported", cfg.Width, cfg.Height)
 	}
 	im, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {

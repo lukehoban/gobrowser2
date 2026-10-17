@@ -109,3 +109,11 @@ func TestRemotePageCannotReadFiles(t *testing.T) {
 		t.Errorf("<base> changed the document URL to %v", p.URL)
 	}
 }
+
+func TestDecodeImageRejectsHugeDimensions(t *testing.T) {
+	// A PNG header claiming 100000x100000 pixels.
+	hdr := []byte("\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR\x00\x01\x86\xa0\x00\x01\x86\xa0\x08\x06\x00\x00\x00\x00\x00\x00\x00")
+	if _, err := DecodeImage(hdr, "image/png"); err == nil {
+		t.Error("expected error for oversized image")
+	}
+}
